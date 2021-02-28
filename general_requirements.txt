@@ -1,0 +1,7 @@
+Jinja2
+numpy
+tensorboardX
+torch
+tqdm
+transformers[sentencepiece]
+scikit-learn
