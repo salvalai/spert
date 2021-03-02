@@ -79,7 +79,8 @@ class SpERTTrainer(BaseTrainer):
                                                                  num_warmup_steps=args.lr_warmup * updates_total,
                                                                  num_training_steps=updates_total)
         # create loss function
-        rel_criterion = torch.nn.BCEWithLogitsLoss(reduction='none')
+        #rel_criterion = torch.nn.BCEWithLogitsLoss(reduction='none')
+        rel_criterion = torch.nn.CrossEntropyLoss(reduction='none')
         entity_criterion = torch.nn.CrossEntropyLoss(reduction='none')
         compute_loss = SpERTLoss(rel_criterion, entity_criterion, model, optimizer, scheduler, args.max_grad_norm)
 

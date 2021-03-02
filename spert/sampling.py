@@ -115,13 +115,13 @@ def create_train_sample(doc, neg_entity_count: int, neg_rel_count: int, max_span
         rel_sample_masks = torch.zeros([1], dtype=torch.bool)
 
     # relation types to one-hot encoding
-    rel_types_onehot = torch.zeros([rel_types.shape[0], rel_type_count], dtype=torch.float32)
-    rel_types_onehot.scatter_(1, rel_types.unsqueeze(1), 1)
-    rel_types_onehot = rel_types_onehot[:, 1:]  # all zeros for 'none' relation
+    #rel_types_onehot = torch.zeros([rel_types.shape[0], rel_type_count], dtype=torch.float32)
+    #rel_types_onehot.scatter_(1, rel_types.unsqueeze(1), 1)
+    #rel_types_onehot = rel_types_onehot[:, 1:]  # all zeros for 'none' relation
 
     return dict(encodings=encodings, context_masks=context_masks, entity_masks=entity_masks,
                 entity_sizes=entity_sizes, entity_types=entity_types,
-                rels=rels, rel_masks=rel_masks, rel_types=rel_types_onehot,
+                rels=rels, rel_masks=rel_masks, rel_types=rel_types,
                 entity_sample_masks=entity_sample_masks, rel_sample_masks=rel_sample_masks)
 
 

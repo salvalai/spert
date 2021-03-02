@@ -85,7 +85,7 @@ class SpERT(BertPreTrainedModel):
             chunk_rel_logits = self._classify_relations(entity_spans_pool, size_embeddings,
                                                         relations, rel_masks, h_large, i)
             rel_clf[:, i:i + self._max_pairs, :] = chunk_rel_logits
-        # (b_size, masks_n, entity_types), (b_size, all_pairs, rel_types)
+        # (b_size, masks_n, entity_types), (b_size, rel_number, rel_types)
         return entity_clf, rel_clf
 
     def _forward_inference(self, encodings: torch.tensor, context_masks: torch.tensor, entity_masks: torch.tensor,
@@ -102,6 +102,7 @@ class SpERT(BertPreTrainedModel):
         entity_clf, entity_spans_pool = self._classify_entities(encodings, h, entity_masks, size_embeddings)
 
         # ignore entity candidates that do not constitute an actual entity for relations (based on classifier)
+        # relations: (batch_size, rel_number, 2)
         relations, rel_masks, rel_sample_masks = self._filter_spans(entity_clf, entity_spans,
                                                                     entity_sample_masks, ctx_size)
 
@@ -117,14 +118,15 @@ class SpERT(BertPreTrainedModel):
             chunk_rel_logits = self._classify_relations(entity_spans_pool, size_embeddings,
                                                         relations, rel_masks, h_large, i)
             # apply sigmoid
-            chunk_rel_clf = torch.sigmoid(chunk_rel_logits)
-            rel_clf[:, i:i + self._max_pairs, :] = chunk_rel_clf
+            #chunk_rel_clf = torch.sigmoid(chunk_rel_logits)
+            rel_clf[:, i:i + self._max_pairs, :] = chunk_rel_logits
 
         rel_clf = rel_clf * rel_sample_masks  # mask
 
         # apply softmax
         entity_clf = torch.softmax(entity_clf, dim=2)
-
+        rel_clf = torch.softmax(rel_clf, dim=2)
+        
         return entity_clf, rel_clf, relations
 
     def _classify_entities(self, encodings, h, entity_masks, size_embeddings):
@@ -157,7 +159,7 @@ class SpERT(BertPreTrainedModel):
 
     def _classify_relations(self, entity_spans, size_embeddings, relations, rel_masks, h, chunk_start):
         """
-            relations: (batch_size, all_pairs)
+            relations: (batch_size, rels_n, 2)
             h: (batch_size, max_pairs, token_seq, embeddings_size)
             chunk_start: int
         """

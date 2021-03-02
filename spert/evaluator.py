@@ -62,6 +62,7 @@ class Evaluator:
         print("")
         gt, pred = self._convert_by_setting(self._gt_entities, self._pred_entities, include_entity_types=True)
         ner_eval = self._score(gt, pred, print_results=True)
+        
 
         print("")
         print("--- Relations ---")

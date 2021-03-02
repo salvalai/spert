@@ -17,6 +17,7 @@ def convert_predictions(batch_entity_clf: torch.tensor, batch_rel_clf: torch.ten
 
     # apply threshold to relations
     batch_rel_clf[batch_rel_clf < rel_filter_threshold] = 0
+    #batch_rel_types = batch_rel_clf.argmax(dim=-1)
 
     batch_pred_entities = []
     batch_pred_relations = []
@@ -74,7 +75,7 @@ def _convert_pred_entities(entity_types: torch.tensor, entity_spans: torch.tenso
 def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
                             entity_types: torch.tensor, entity_spans: torch.tensor, input_reader: BaseInputReader):
     rel_class_count = rel_clf.shape[1]
-    rel_clf = rel_clf.view(-1)
+    rel_clf = rel_clf.view(-1) # (rels_n, hotenc_dim) -> (rels_n * hotenc_dim)
 
     # get predicted relation labels and corresponding entity pairs
     rel_nonzero = rel_clf.nonzero().view(-1)

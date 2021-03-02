@@ -22,8 +22,10 @@ def create_directories_file(f):
 
 
 def create_directories_dir(d):
-    if d and not os.path.exists(d):
-        os.makedirs(d)
+    if d:
+        d = os.path.normpath(d)
+        if not os.path.exists(d):
+            os.makedirs(d)
 
     return d
 
