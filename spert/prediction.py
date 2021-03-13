@@ -16,18 +16,20 @@ def convert_predictions(batch_entity_clf: torch.tensor, batch_rel_clf: torch.ten
     batch_entity_types *= batch['entity_sample_masks'].long()
 
     # apply threshold to relations
-    batch_rel_clf[batch_rel_clf < rel_filter_threshold] = 0
-    #batch_rel_types = batch_rel_clf.argmax(dim=-1)
+    #batch_rel_clf[batch_rel_clf < rel_filter_threshold] = 0
+    batch_rel_types = batch_rel_clf.argmax(dim=-1)
 
     batch_pred_entities = []
     batch_pred_relations = []
 
-    for i in range(batch_rel_clf.shape[0]):
+    #for i in range(batch_rel_clf.shape[0]):
+    for i in range(batch_rel_types.shape[0]):
         # get model predictions for sample
         entity_types = batch_entity_types[i]
         entity_spans = batch['entity_spans'][i]
         entity_clf = batch_entity_clf[i]
-        rel_clf = batch_rel_clf[i]
+        #rel_clf = batch_rel_clf[i]
+        rel_types = batch_rel_types[i]
         rels = batch_rels[i]
 
         # convert predicted entities
@@ -35,7 +37,8 @@ def convert_predictions(batch_entity_clf: torch.tensor, batch_rel_clf: torch.ten
                                                       entity_clf, input_reader)
 
         # convert predicted relations
-        sample_pred_relations = _convert_pred_relations(rel_clf, rels,
+        #sample_pred_relations = _convert_pred_relations(rel_clf, rels,
+        sample_pred_relations = _convert_pred_relations(rel_types, rels,
                                                         entity_types, entity_spans, input_reader)
 
         if no_overlapping:
@@ -74,15 +77,17 @@ def _convert_pred_entities(entity_types: torch.tensor, entity_spans: torch.tenso
 
 def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
                             entity_types: torch.tensor, entity_spans: torch.tensor, input_reader: BaseInputReader):
-    rel_class_count = rel_clf.shape[1]
-    rel_clf = rel_clf.view(-1) # (rels_n, hotenc_dim) -> (rels_n * hotenc_dim)
+    #rel_class_count = rel_clf.shape[1]
+    #rel_clf = rel_clf.view(-1) # (rels_n, hotenc_dim) -> (rels_n * hotenc_dim)
 
     # get predicted relation labels and corresponding entity pairs
     rel_nonzero = rel_clf.nonzero().view(-1)
     pred_rel_scores = rel_clf[rel_nonzero]
 
-    pred_rel_types = (rel_nonzero % rel_class_count) + 1  # model does not predict None class (+1)
-    valid_rel_indices = rel_nonzero // rel_class_count
+    #pred_rel_types = (rel_nonzero % rel_class_count) + 1  # model does not predict None class (+1)
+    pred_rel_types = rel_clf[rel_nonzero]
+    #valid_rel_indices = rel_nonzero // rel_class_count
+    valid_rel_indices = rel_clf.nonzero().view(-1)
     valid_rels = rels[valid_rel_indices]
 
     # get masks of entities in relation
@@ -99,6 +104,8 @@ def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
 
     for i in range(pred_rel_types.shape[0]):
         label_idx = pred_rel_types[i].item()
+        if label_idx >= input_reader.relation_type_count:
+            print('Error')
         pred_rel_type = input_reader.get_relation_type(label_idx)
         pred_head_type_idx, pred_tail_type_idx = pred_rel_entity_types[i][0].item(), pred_rel_entity_types[i][1].item()
         pred_head_type = input_reader.get_entity_type(pred_head_type_idx)
