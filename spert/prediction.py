@@ -16,20 +16,21 @@ def convert_predictions(batch_entity_clf: torch.tensor, batch_rel_clf: torch.ten
     batch_entity_types *= batch['entity_sample_masks'].long()
 
     # apply threshold to relations
-    #batch_rel_clf[batch_rel_clf < rel_filter_threshold] = 0
-    batch_rel_types = batch_rel_clf.argmax(dim=-1)
+    #batch_rel_clf[batch_rel_clf < rel_filter_threshold] = 0 #apply threshold
+    #batch_rel_types = batch_rel_clf.argmax(dim=-1) #softmax
+    
 
     batch_pred_entities = []
     batch_pred_relations = []
 
     #for i in range(batch_rel_clf.shape[0]):
-    for i in range(batch_rel_types.shape[0]):
+    for i in range(batch_rel_clf.shape[0]):
         # get model predictions for sample
         entity_types = batch_entity_types[i]
         entity_spans = batch['entity_spans'][i]
         entity_clf = batch_entity_clf[i]
         #rel_clf = batch_rel_clf[i]
-        rel_types = batch_rel_types[i]
+        rel_types = batch_rel_clf[i]
         rels = batch_rels[i]
 
         # convert predicted entities
@@ -81,13 +82,21 @@ def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
     #rel_clf = rel_clf.view(-1) # (rels_n, hotenc_dim) -> (rels_n * hotenc_dim)
 
     # get predicted relation labels and corresponding entity pairs
-    rel_nonzero = rel_clf.nonzero().view(-1)
-    pred_rel_scores = rel_clf[rel_nonzero]
+    #rel_nonzero = rel_clf.nonzero().view(-1)
+    
+    valid_rel_indices = torch.nonzero(torch.sum(rel_clf, dim=-1)).view(-1)
+    valid_rel_indices = valid_rel_indices.view(-1)
+    
+    pred_rel_types = rel_clf[valid_rel_indices]
+    pred_rel_types = pred_rel_types.argmax(dim=-1)
+    
+    pred_rel_scores = rel_clf[valid_rel_indices].max(dim=-1)[0]
 
+    # pred_rel_types
     #pred_rel_types = (rel_nonzero % rel_class_count) + 1  # model does not predict None class (+1)
-    pred_rel_types = rel_clf[rel_nonzero]
+    #pred_rel_types = rel_clf[rel_nonzero]
     #valid_rel_indices = rel_nonzero // rel_class_count
-    valid_rel_indices = rel_clf.nonzero().view(-1)
+    #valid_rel_indices = rel_clf.nonzero().view(-1)
     valid_rels = rels[valid_rel_indices]
 
     # get masks of entities in relation
