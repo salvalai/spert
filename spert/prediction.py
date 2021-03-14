@@ -88,9 +88,10 @@ def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
     valid_rel_indices = valid_rel_indices.view(-1)
     
     pred_rel_types = rel_clf[valid_rel_indices]
-    pred_rel_types = pred_rel_types.argmax(dim=-1)
-    
-    pred_rel_scores = rel_clf[valid_rel_indices].max(dim=-1)[0]
+    pred_rel_scores = rel_clf[valid_rel_indices]
+    if pred_rel_types.shape[0] > 0:
+        pred_rel_types = pred_rel_types.argmax(dim=-1)
+        pred_rel_scores = pred_rel_scores.max(dim=-1)[0]
 
     # pred_rel_types
     #pred_rel_types = (rel_nonzero % rel_class_count) + 1  # model does not predict None class (+1)
