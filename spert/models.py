@@ -121,12 +121,13 @@ class SpERT(BertPreTrainedModel):
             #chunk_rel_clf = torch.sigmoid(chunk_rel_logits)
             rel_clf[:, i:i + self._max_pairs, :] = chunk_rel_logits
 
-        rel_clf = rel_clf * rel_sample_masks  # mask
+        #rel_clf = rel_clf * rel_sample_masks  # mask
 
         # apply softmax
         entity_clf = torch.softmax(entity_clf, dim=2)
         rel_clf = torch.softmax(rel_clf, dim=2)
-        
+        rel_clf *= rel_sample_masks
+
         return entity_clf, rel_clf, relations
 
     def _classify_entities(self, encodings, h, entity_masks, size_embeddings):

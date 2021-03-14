@@ -104,8 +104,6 @@ def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
 
     for i in range(pred_rel_types.shape[0]):
         label_idx = pred_rel_types[i].item()
-        if label_idx >= input_reader.relation_type_count:
-            print('Error')
         pred_rel_type = input_reader.get_relation_type(label_idx)
         pred_head_type_idx, pred_tail_type_idx = pred_rel_entity_types[i][0].item(), pred_rel_entity_types[i][1].item()
         pred_head_type = input_reader.get_entity_type(pred_head_type_idx)
