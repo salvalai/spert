@@ -29,8 +29,8 @@ def convert_predictions(batch_entity_clf: torch.tensor, batch_rel_clf: torch.ten
         entity_types = batch_entity_types[i]
         entity_spans = batch['entity_spans'][i]
         entity_clf = batch_entity_clf[i]
-        #rel_clf = batch_rel_clf[i]
-        rel_types = batch_rel_clf[i]
+        rel_clf = batch_rel_clf[i]
+        #rel_types = batch_rel_clf[i]
         rels = batch_rels[i]
 
         # convert predicted entities
@@ -38,8 +38,8 @@ def convert_predictions(batch_entity_clf: torch.tensor, batch_rel_clf: torch.ten
                                                       entity_clf, input_reader)
 
         # convert predicted relations
-        #sample_pred_relations = _convert_pred_relations(rel_clf, rels,
-        sample_pred_relations = _convert_pred_relations(rel_types, rels,
+        sample_pred_relations = _convert_pred_relations(rel_clf, rels,
+        #sample_pred_relations = _convert_pred_relations(rel_types, rels,
                                                         entity_types, entity_spans, input_reader)
 
         if no_overlapping:
@@ -89,8 +89,12 @@ def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
     
     pred_rel_types = rel_clf[valid_rel_indices]
     pred_rel_scores = rel_clf[valid_rel_indices]
-    if pred_rel_types.shape[0] > 0:
+    if pred_rel_types.shape[0] != 0:
         pred_rel_types = pred_rel_types.argmax(dim=-1)
+        valid_rel_indices = torch.nonzero(pred_rel_types).view(-1)
+        
+        pred_rel_types = pred_rel_types[valid_rel_indices]
+        pred_rel_scores = rel_clf[valid_rel_indices]
         pred_rel_scores = pred_rel_scores.max(dim=-1)[0]
 
     # pred_rel_types
@@ -206,9 +210,21 @@ def store_predictions(documents, pred_entities, pred_relations, store_path):
 
             converted_head = dict(type=head_type, start=head_span_tokens[0].index,
                                   end=head_span_tokens[-1].index + 1)
+            if converted_head not in converted_entities:
+                print(f"[!] rel: {relation}")
+                print(f"[!] rel head {converted_head} not in converted entities")
+                print(f"Skipping")
+                continue
+
             converted_tail = dict(type=tail_type, start=tail_span_tokens[0].index,
                                   end=tail_span_tokens[-1].index + 1)
 
+            if converted_tail not in converted_entities:
+                print(f"[!] rel: {relation}")
+                print(f"[!] rel tail {converted_tail} not in converted entities")
+                print(f"Skipping")
+                continue
+            
             head_idx = converted_entities.index(converted_head)
             tail_idx = converted_entities.index(converted_tail)
 
