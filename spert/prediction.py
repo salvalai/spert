@@ -88,13 +88,14 @@ def _convert_pred_relations(rel_clf: torch.tensor, rels: torch.tensor,
     valid_rel_indices = valid_rel_indices.view(-1)
     
     pred_rel_types = rel_clf[valid_rel_indices]
-    pred_rel_scores = rel_clf[valid_rel_indices]
     if pred_rel_types.shape[0] != 0:
         pred_rel_types = pred_rel_types.argmax(dim=-1)
         valid_rel_indices = torch.nonzero(pred_rel_types).view(-1)
         
         pred_rel_types = pred_rel_types[valid_rel_indices]
-        pred_rel_scores = rel_clf[valid_rel_indices]
+
+    pred_rel_scores = rel_clf[valid_rel_indices]
+    if pred_rel_scores.shape[0] != 0:
         pred_rel_scores = pred_rel_scores.max(dim=-1)[0]
 
     # pred_rel_types
