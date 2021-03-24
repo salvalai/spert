@@ -351,8 +351,8 @@ class Evaluator:
         e2 = self._text_encoder.decode(segments[3])
         ctx_after = self._text_encoder.decode(segments[4])
 
-        html = (ctx_before + e1_tag + e1 + '</span> '
-                + ctx_between + e2_tag + e2 + '</span> ' + ctx_after)
+        html = (ctx_before + e1_tag + e1 + '</span> ' 
+                    + ctx_between + e2_tag + e2 + '</span> ' + ctx_after)
         html = self._prettify(html)
 
         return html
