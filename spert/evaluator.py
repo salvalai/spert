@@ -204,6 +204,8 @@ class Evaluator:
             union.update(sample_gt)
             union.update(sample_pred)
             print(f"evaluator:_score: union size{len(union)}")
+            print(f"evaluator:_score: sample_gt size{len(sample_gt)}")
+            print(f"evaluator:_score: sample_pred size{len(sample_pred)}")
 
             for s in union:
                 if s in sample_gt:
