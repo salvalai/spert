@@ -185,7 +185,7 @@ class Evaluator:
 
         converted_gt, converted_pred = [], []
 
-        print(f"evaluator:_convert_by_setting: size{len(zip(gt, pred))}")
+        print(f"evaluator:_convert_by_setting: pred size{len(pred)}")
         for sample_gt, sample_pred in zip(gt, pred):
             converted_gt.append([convert(t) for t in sample_gt])
             converted_pred.append([convert(t) for t in sample_pred])
