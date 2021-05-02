@@ -185,7 +185,7 @@ class Evaluator:
 
         converted_gt, converted_pred = [], []
 
-        print(f"evaluator:_convert_by_setting: pred size{len(pred)}")
+        #print(f"evaluator:_convert_by_setting: pred size{len(pred)}")
         for sample_gt, sample_pred in zip(gt, pred):
             converted_gt.append([convert(t) for t in sample_gt])
             converted_pred.append([convert(t) for t in sample_pred])
@@ -203,9 +203,9 @@ class Evaluator:
             union = set()
             union.update(sample_gt)
             union.update(sample_pred)
-            print(f"evaluator:_score: union size{len(union)}")
-            print(f"evaluator:_score: sample_gt size{len(sample_gt)}")
-            print(f"evaluator:_score: sample_pred size{len(sample_pred)}")
+            #print(f"evaluator:_score: union size{len(union)}")
+            #print(f"evaluator:_score: sample_gt size{len(sample_gt)}")
+            #print(f"evaluator:_score: sample_pred size{len(sample_pred)}")
 
             for s in union:
                 if s in sample_gt:
