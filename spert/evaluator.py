@@ -1,10 +1,11 @@
 import os
-import os
 import warnings
+import json
 from typing import List, Tuple, Dict
 
 import torch
 from sklearn.metrics import precision_recall_fscore_support as prfs
+from sklearn.metrics import confusion_matrix as cnfmtx
 from transformers import BertTokenizer
 
 from spert import prediction
@@ -18,7 +19,7 @@ SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 class Evaluator:
     def __init__(self, dataset: Dataset, input_reader: BaseInputReader, text_encoder: BertTokenizer,
                  rel_filter_threshold: float, no_overlapping: bool,
-                 predictions_path: str, examples_path: str, example_count: int):
+                 predictions_path: str, examples_path: str, conf_mat_path: str, example_count: int):
         self._text_encoder = text_encoder
         self._input_reader = input_reader
         self._dataset = dataset
@@ -27,6 +28,7 @@ class Evaluator:
 
         self._predictions_path = predictions_path
         self._examples_path = examples_path
+        self._conf_matrix_path = conf_mat_path
 
         self._example_count = example_count
 
@@ -37,6 +39,8 @@ class Evaluator:
         # entities
         self._gt_entities = []  # ground truth
         self._pred_entities = []  # prediction
+
+        self._conf_matrix = [] # confusion matrix
 
         self._pseudo_entity_type = EntityType('Entity', 1, 'Entity', 'Entity')  # for span only evaluation
 
@@ -83,6 +87,41 @@ class Evaluator:
 
         return ner_eval, rel_eval, rel_nec_eval
 
+    def compute_confusion_matrix(self, store=False):
+        print("Evaluation: confusion matrix")
+        print("")
+        gt, pred = self._convert_by_setting(self._gt_relations, self._pred_relations, include_entity_types=True)
+        self._conf_matrix = self._confusion_matrix(gt, pred, print_results=True)
+
+        if store:
+            with open(self._conf_matrix_path, 'w') as f:
+                json.dump(self._conf_matrix, f)
+        return self._conf_matrix
+
+    def _confusion_matrix(self, gt, pred, print_results: bool = False):
+        assert len(gt) == len(pred)
+
+        gt_flat, pred_flat, types = self._flatten(gt, pred)
+        labels = [t.index for t in types]
+        matrix = cnfmtx(gt_flat, pred_flat, labels=labels)
+        if print_results:
+            self._print_conf_matrix(matrix, types)
+        return matrix
+    
+    def _print_conf_matrix(self, matrix, types):
+        print("")
+        columns = ['predicted as: ']
+        for i in range(len(types)):
+            columns.append(types[i].short_name)
+        row_format = "%20s" + (" %12s" * (len(columns) - 1))
+        results = [row_format % tuple(columns), '\n']
+        for i in range(len(types)):
+            row = [types[i].short_name]
+            row.extend(["%d" % v for v in matrix[i]])
+            results.append(row_format % tuple(row))
+            results.append("\n")
+        print(''.join(results))
+        
     def store_predictions(self):
         prediction.store_predictions(self._dataset.documents, self._pred_entities,
                                      self._pred_relations, self._predictions_path)
@@ -190,11 +229,16 @@ class Evaluator:
 
         return converted_gt, converted_pred
 
-    def _score(self, gt: List[List[Tuple]], pred: List[List[Tuple]], print_results: bool = False):
+    def _flatten(self, gt: List[List[Tuple]], pred: List[List[Tuple]]):
+        """
+            Generate a vector for ground truth (sample# x 1) and predictions (sample# x 1) plus all the types extracted.
+            flatten -> gd_flatten, pred_flatten, types
+            ex: gt_flatten: [<class number>]
+        """
         assert len(gt) == len(pred)
 
-        gt_flat = []
-        pred_flat = []
+        flatten_gt = []
+        flatten_pred = []
         types = set()
 
         for (sample_gt, sample_pred) in zip(gt, pred):
@@ -205,18 +249,23 @@ class Evaluator:
             for s in union:
                 if s in sample_gt:
                     t = s[2]
-                    gt_flat.append(t.index)
+                    flatten_gt.append(t.index)
                     types.add(t)
                 else:
-                    gt_flat.append(0)
+                    flatten_gt.append(0)
 
                 if s in sample_pred:
                     t = s[2]
-                    pred_flat.append(t.index)
+                    flatten_pred.append(t.index)
                     types.add(t)
                 else:
-                    pred_flat.append(0)
+                    flatten_pred.append(0)
+        return flatten_gt, flatten_pred, types
 
+    def _score(self, gt: List[List[Tuple]], pred: List[List[Tuple]], print_results: bool = False):
+        assert len(gt) == len(pred)
+
+        gt_flat, pred_flat, types = self._flatten(gt, pred)
         metrics = self._compute_metrics(gt_flat, pred_flat, types, print_results)
         return metrics
 

@@ -216,9 +216,10 @@ class SpERTTrainer(BaseTrainer):
         # create evaluator
         predictions_path = os.path.join(self._log_path, f'predictions_{dataset.label}_epoch_{epoch}.json')
         examples_path = os.path.join(self._log_path, f'examples_%s_{dataset.label}_epoch_{epoch}.html')
+        confusion_matrix_path = os.path.join(self._log_path, f'conf_mat_%s_{dataset.label}_epoch_{epoch}.json')
         evaluator = Evaluator(dataset, input_reader, self._tokenizer,
                               self._args.rel_filter_threshold, self._args.no_overlapping, predictions_path,
-                              examples_path, self._args.example_count)
+                              examples_path, confusion_matrix_path, self._args.example_count)
 
         # create data loader
         dataset.switch_mode(Dataset.EVAL_MODE)
@@ -248,6 +249,8 @@ class SpERTTrainer(BaseTrainer):
         ner_eval, rel_eval, rel_nec_eval = evaluator.compute_scores()
         self._log_eval(*ner_eval, *rel_eval, *rel_nec_eval,
                        epoch, iteration, global_iteration, dataset.label)
+
+        evaluator.compute_confusion_matrix(store=True)
 
         if self._args.store_predictions and not self._args.no_overlapping:
             evaluator.store_predictions()
