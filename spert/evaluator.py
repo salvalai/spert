@@ -110,6 +110,7 @@ class Evaluator:
     
     def _print_conf_matrix(self, matrix, types):
         print("")
+        types = {i.index:i for i in types}
         columns = ['predicted as: ']
         for i in range(len(types)):
             columns.append(types[i].short_name)
