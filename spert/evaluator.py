@@ -109,7 +109,7 @@ class Evaluator:
         return matrix
     
     def _print_conf_matrix(self, matrix, types):
-        print("")
+        print(f"shape: {matrix.shape}, types: {len(types)}")
         types = {i.index:i for i in types}
         columns = ['predicted as: ']
         for i in range(len(types)):
