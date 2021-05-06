@@ -88,15 +88,38 @@ class Evaluator:
         return ner_eval, rel_eval, rel_nec_eval
 
     def compute_confusion_matrix(self, store=False):
+        print("")
         print("Evaluation: confusion matrix")
+
+        print("")
+        print("--- Entities (NEC) ---")
+        print("")
+        gt, pred = self._convert_by_setting(self._gt_entities, self._pred_entities, include_entity_types=True)
+        nec_confusion = self._confusion_matrix(gt, pred, print_results=True)
+
+        print("")
+        print("--- Relations ---")
+        print("")
+        print("Without named entity classification (NEC)")
+        print("")
+        gt, pred = self._convert_by_setting(self._gt_relations, self._pred_relations, include_entity_types=False)
+        rel_confusion = self._confusion_matrix(gt, pred, print_results=True)
+
+
+        print("")
+        print("With named entity classification (NEC)")
         print("")
         gt, pred = self._convert_by_setting(self._gt_relations, self._pred_relations, include_entity_types=True)
-        self._conf_matrix = self._confusion_matrix(gt, pred, print_results=True)
+        rel_nec_confusion = self._confusion_matrix(gt, pred, print_results=True)
 
         if store:
             with open(self._conf_matrix_path, 'w') as f:
-                json.dump(self._conf_matrix, f)
-        return self._conf_matrix
+                json.dump(dict(
+                    NEC=nec_confusion.tolist(),
+                    REL=rel_confusion.tolist(),
+                    REL_NEC=rel_nec_confusion.tolist(),
+                ), f)
+        return nec_confusion, rel_confusion, rel_nec_confusion
 
     def _confusion_matrix(self, gt, pred, print_results: bool = False):
         assert len(gt) == len(pred)
@@ -109,7 +132,7 @@ class Evaluator:
         return matrix
     
     def _print_conf_matrix(self, matrix, types):
-        print(f"shape: {matrix.shape}, types: {len(types)}")
+        #print(f"shape: {matrix.shape}, types: {len(types)}")
         types = {i.index:i for i in types}
         columns = ['predicted as: ']
         for i in range(len(types)):
