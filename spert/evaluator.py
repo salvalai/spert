@@ -113,11 +113,11 @@ class Evaluator:
         types = {i.index:i for i in types}
         columns = ['predicted as: ']
         for i in range(len(types)):
-            columns.append(types[i].short_name)
+            columns.append(types[i+1].short_name)
         row_format = "%20s" + (" %12s" * (len(columns) - 1))
         results = [row_format % tuple(columns), '\n']
         for i in range(len(types)):
-            row = [types[i].short_name]
+            row = [types[i+1].short_name]
             row.extend(["%d" % v for v in matrix[i]])
             results.append(row_format % tuple(row))
             results.append("\n")
