@@ -1,0 +1,71 @@
+--- Entities (named entity recognition (NER)) ---
+An entity is considered correct if the entity type and span is predicted correctly
+
+                type    precision       recall     f1-score      support
+                Peop        76.30        93.29        83.94          283
+               Other        37.23        29.66        33.02          118
+                 Org        45.57        63.53        53.07          170
+                 Loc        65.39        79.81        71.89          322
+
+               micro        62.06        74.36        67.65          893
+               macro        56.12        66.57        60.48          893
+
+--- Relations ---
+
+Without named entity classification (NEC)
+A relation is considered correct if the relation type and the spans of the two related entities are predicted correctly (entity type is not considered)
+
+                type    precision       recall     f1-score      support
+                Live        31.06        45.05        36.77           91
+               OrgBI        13.79        21.05        16.67           76
+               LocIn        33.63        58.46        42.70           65
+                Work        31.48        49.28        38.42           69
+                Kill        43.08        66.67        52.34           42
+
+               micro        29.40        45.77        35.80          343
+               macro        30.61        48.10        37.38          343
+
+With named entity classification (NEC)
+A relation is considered correct if the relation type and the two related entities are predicted correctly (in span and entity type)
+
+                type    precision       recall     f1-score      support
+                Live        31.06        45.05        36.77           91
+               OrgBI        13.79        21.05        16.67           76
+               LocIn        33.63        58.46        42.70           65
+                Work        31.48        49.28        38.42           69
+                Kill        43.08        66.67        52.34           42
+
+               micro        29.40        45.77        35.80          343
+               macro        30.61        48.10        37.38          343
+
+Evaluation: confusion matrix
+
+--- Entities (NEC) ---
+
+      predicted as:           Loc          Org         Peop        Other
+                 Loc          264            0            0            0
+                 Org            0           35            0            0
+                Peop            0            0          108            0
+               Other            0            0            0          257
+
+
+--- Relations ---
+
+Without named entity classification (NEC)
+
+      predicted as:          Work         Kill        OrgBI         Live        LocIn
+                Work           41            0            0            0            0
+                Kill            0           16            0            0            0
+               OrgBI            0            0           38            0            0
+                Live            0            0            0           34            0
+               LocIn            0            0            0            0           28
+
+
+With named entity classification (NEC)
+
+      predicted as:          Work         Kill        OrgBI         Live        LocIn
+                Work           41            0            0            0            0
+                Kill            0           16            0            0            0
+               OrgBI            0            0           38            0            0
+                Live            0            0            0           34            0
+               LocIn            0            0            0            0           28
