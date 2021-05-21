@@ -192,10 +192,15 @@ def store_predictions(documents, pred_entities, pred_relations, store_path):
                                   end=head_span_tokens[-1].index + 1)
             converted_tail = dict(type=tail_type, start=tail_span_tokens[0].index,
                                   end=tail_span_tokens[-1].index + 1)
-
-            head_idx = converted_entities.index(converted_head)
-            tail_idx = converted_entities.index(converted_tail)
-
+            try:
+                head_idx = converted_entities.index(converted_head)
+                tail_idx = converted_entities.index(converted_tail)
+            except Exception as e:
+                print(e)
+                print(f"relation: {relation}")
+                print(f"head: {converted_head}")
+                print(f"tail: {converted_tail}")
+                continue
             converted_relation = dict(type=relation_type, head=head_idx, tail=tail_idx)
             converted_relations.append(converted_relation)
         converted_relations = sorted(converted_relations, key=lambda r: r['head'])
