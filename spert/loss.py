@@ -35,6 +35,7 @@ class SpERTLoss(Loss):
             #rel_types = rel_types.view(-1, rel_types.shape[-1])
             rel_types = rel_types.view(-1)
             
+            print("Rel_logits: ", rel_logits.shape, ", rel_types", rel_types.shape)
             rel_loss = self._rel_criterion(rel_logits, rel_types)
             #rel_loss = rel_loss.sum(-1) / rel_loss.shape[-1]
             rel_loss = (rel_loss * rel_sample_masks).sum() / rel_count
