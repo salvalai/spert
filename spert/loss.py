@@ -31,8 +31,10 @@ class SpERTLoss(Loss):
         rel_count = rel_sample_masks.sum()
 
         if rel_count.item() != 0:
+            print("rel_logits ", rel_logits.shape)
             rel_logits = rel_logits.view(-1, rel_logits.shape[-1])
             #rel_types = rel_types.view(-1, rel_types.shape[-1])
+            print("rel_types", rel_types.shape)
             print(rel_types)
             # rel_types = rel_types.view(-1)
             
