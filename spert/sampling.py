@@ -36,8 +36,9 @@ def create_train_sample(doc, neg_entity_count: int, neg_rel_count: int, max_span
         pos_rels.append((pos_entity_spans.index(s1), pos_entity_spans.index(s2)))
         pos_rel_spans.append((s1, s2))
 
-        pair_rel_types = [r.relation_type.index for r in rels]
-        pair_rel_types = [int(t in pair_rel_types) for t in range(rel_type_count)]
+        pair_rel_types = rels[0].relation_type.index
+        #pair_rel_types = [r.relation_type.index for r in rels]
+        #pair_rel_types = [int(t in pair_rel_types) for t in range(rel_type_count)]
         pos_rel_types.append(pair_rel_types)
         pos_rel_masks.append(create_rel_mask(s1, s2, context_size))
 
@@ -76,7 +77,7 @@ def create_train_sample(doc, neg_entity_count: int, neg_rel_count: int, max_span
     neg_rels = [(pos_entity_spans.index(s1), pos_entity_spans.index(s2)) for s1, s2 in neg_rel_spans]
     neg_rel_masks = [create_rel_mask(*spans, context_size) for spans in neg_rel_spans]
     # Neg type assigned to None
-    neg_rel_types = [(1,) + (0,) * (rel_type_count-1)] * len(neg_rel_spans)
+    neg_rel_types = [0] * len(neg_rel_spans)
 
     # merge
     entity_types = pos_entity_types + neg_entity_types
@@ -121,7 +122,7 @@ def create_train_sample(doc, neg_entity_count: int, neg_rel_count: int, max_span
     else:
         # corner case handling (no pos/neg relations)
         rels = torch.zeros([1, 2], dtype=torch.long)
-        rel_types = torch.zeros([1, rel_type_count], dtype=torch.float32)
+        rel_types = torch.zeros([1], dtype=torch.float32)
         rel_masks = torch.zeros([1, context_size], dtype=torch.bool)
         rel_sample_masks = torch.zeros([1], dtype=torch.bool)
 
