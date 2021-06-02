@@ -122,7 +122,7 @@ def create_train_sample(doc, neg_entity_count: int, neg_rel_count: int, max_span
     else:
         # corner case handling (no pos/neg relations)
         rels = torch.zeros([1, 2], dtype=torch.long)
-        rel_types = torch.zeros([1], dtype=torch.float32)
+        rel_types = torch.zeros([1], dtype=torch.long)
         rel_masks = torch.zeros([1, context_size], dtype=torch.bool)
         rel_sample_masks = torch.zeros([1], dtype=torch.bool)
 
